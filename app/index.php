@@ -39,8 +39,13 @@ $settings["subject"] = "Simple Mailform";
 // Absolute URL to complete.html
 // If you rename or move complete.html file, please rewrite completePageUrl setting
 //
-$settings["completePageUrl"] = "http://HOSTNAME/PATH_TO_SIMPLE_MAILFORM/complete.html";
+$settings["completeHtmlName"] = "complete.html";
 
+
+// OPTIONAL
+// Error message when required message does not contain texts;
+//
+$settings["error_not_exist_required_parameter"] = "%s is required.";
 
 
 // Mailform Script //
@@ -50,17 +55,30 @@ $errors = Array();
 
 if ($_POST){
 
-	// set default settings
+	// check settings and set default settings
+	if (!isset($settings["email"])) {
+		$errors[] = "[Settings] 'email' setting is REQUIRED";
+	}
+	if (!isset($settings["subject"])) {
+		$errors[] = "[Settings] 'subject' setting is REQUIRED";
+	}
 	if (!isset($settings["from"])) {
 		$settings["from"] = $settings["email"];
 	}
 	if (!isset($settings["parameters"])) {
 		$settings["parameters"] = Array();
 	}
+	if (!isset($settings["error_not_exist_required_parameter"])) {
+		$settings["error_not_exist_required_parameter"] = "%s is required.";
+	}
+	if (!isset($settings["completeHtmlName"])) {
+		$settings["completeHtmlName"] = 'complete.html';
+	}
 	
 	// mail variables
 	$from = $settings["from"];
 	$to = $settings["email"];
+	$subject = $settings["subject"];
 	$headers = "";
 	$body = "";
 
@@ -73,10 +91,23 @@ if ($_POST){
 		$body .= $param . "\n\n";
 	}
 
+	// send mail if not exist errors
 	if (!$errors){
+
+		//send mail
 		$result = mb_send_mail($to, $subject, $body, $headers);
+
+		// redirect to complete page if succeed.
 		if ($result){
-			header("Location: ".$settings["completePageUrl"]);
+
+			//construct URL of complete page.
+			$completeHtmlUrl  = "http://";
+			$completeHtmlUrl .= $_SERVER["SERVER_NAME"];
+			$completeHtmlUrl .= dirname($_SERVER["SCRIPT_NAME"]);
+			$completeHtmlUrl  = $settings['completeHtmlName'];
+
+			//redirect
+			header("Location: ".$completeHtmlUrl);
 			exit;
 		} else {
 			$error[] = "The mail was not sent.";
