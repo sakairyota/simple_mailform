@@ -8,44 +8,44 @@
 // Configuration //
 
 
-// REQUIRED
+// email (REQUIRED)
 // The is the mail address that mail is sent to.
 //
-$settings["email"] = "info@example.com";
+$settings['email'] = 'info@example.com';
 
 
-// REQUIRED
-// This is the mail subject.
+// subject (REQUIRED)
+//     This is the mail subject.
 // 
-$settings["subject"] = "Simple Mailform";
+$settings['subject'] = 'Simple Mailform';
 
 
-// OPTIONAL
-// This is the 'From' mail address.
-// If 'from' is not set, 'email' setting is set as 'From' address. 
+// from (optional)
+//     This is the 'From' mail address.
+//     If 'from' is not set, 'email' setting is set as 'From' address. 
 // 
-//$settings["from"] = "info@example.com";
+//$settings['from'] = 'info@example.com';
 
 
-// OPTIONAL
-// This is a configuration of each form parameters.
+// parameters (optional)
+//     This is a configuration of each form parameters.
 //
-//$settings["parameters"] = Array(
-//	"email" => Array("required" => true, "formal_name" => "Mail Address")
+//$settings['parameters'] = Array(
+//	'email' => Array('required' => true, 'formalName' => 'Mail Address')
 //);
 
 
-//REQUIRED
-// Absolute URL to complete.html
-// If you rename or move complete.html file, please rewrite completePageUrl setting
+// completeHtmlName (optional)
+//     File name of complete page.
+//     Default value is 'complete.html'
 //
-$settings["completeHtmlName"] = "complete.html";
+//$settings['completeHtmlName'] = 'complete.html';
 
 
-// OPTIONAL
-// Error message when required message does not contain texts;
+// error_not_exist_required_parameter (optional)
+//     Error message when required message does not contain texts;
 //
-$settings["error_not_exist_required_parameter"] = "%s is required.";
+$settings['error_not_exist_required_parameter'] = '%s is required.';
 
 
 // Mailform Script //
@@ -56,38 +56,62 @@ $errors = Array();
 if ($_POST){
 
 	// check settings and set default settings
-	if (!isset($settings["email"])) {
+	if (!isset($settings['email'])) {
 		$errors[] = "[Settings] 'email' setting is REQUIRED";
 	}
-	if (!isset($settings["subject"])) {
+	if (!isset($settings['subject'])) {
 		$errors[] = "[Settings] 'subject' setting is REQUIRED";
 	}
-	if (!isset($settings["from"])) {
-		$settings["from"] = $settings["email"];
+	if (!isset($settings['from'])) {
+		$settings['from'] = $settings['email'];
 	}
-	if (!isset($settings["parameters"])) {
-		$settings["parameters"] = Array();
+	if (!isset($settings['parameters'])) {
+		$settings['parameters'] = Array();
 	}
-	if (!isset($settings["error_not_exist_required_parameter"])) {
-		$settings["error_not_exist_required_parameter"] = "%s is required.";
+	if (!isset($settings['error_not_exist_required_parameter'])) {
+		$settings['error_not_exist_required_parameter'] = '%s is required.';
 	}
-	if (!isset($settings["completeHtmlName"])) {
-		$settings["completeHtmlName"] = 'complete.html';
+	if (!isset($settings['completeHtmlName'])) {
+		$settings['completeHtmlName'] = 'complete.html';
 	}
 	
+	// form parameter variable
+	$parameters = $settings['parameters'];
+	foreach($_POST as $name => $param) {
+		if (! isset($parameters[$name])) {
+			$parameters[$name] = Array();
+		}
+		if (! isset($parameters[$name]['formalName'])) {
+			$parameters[$name]['formalName'] = $name;
+		}
+	}
+
+	// validate required parameters
+	foreach($_POST as $name => $param) {
+		if (isset($parameters[$name]['required']) && $parameters[$name]['required']) {
+			if ($param == '') {
+				$errors[] = sprintf($settings['error_not_exist_required_parameter'], $parameters[$name]['formalName']);
+			}
+		}
+	}
+
 	// mail variables
-	$from = $settings["from"];
-	$to = $settings["email"];
-	$subject = $settings["subject"];
-	$headers = "";
-	$body = "";
+	$from = $settings['from'];
+	$to = $settings['email'];
+	$subject = $settings['subject'];
+	$headers = '';
+	$body = '';
 
 	// construct mail headers
 	$headers .= "From: <{$from}>";
 
 	// construct mail body
 	foreach($_POST as $name => $param){
-		$body .= $name . ":\n";
+
+		// print parameter name
+		$body .= $parameters[$name]['formalName'] . ":\n";
+
+		// print parameter content
 		$body .= $param . "\n\n";
 	}
 
@@ -101,16 +125,16 @@ if ($_POST){
 		if ($result){
 
 			//construct URL of complete page.
-			$completeHtmlUrl  = "http://";
-			$completeHtmlUrl .= $_SERVER["SERVER_NAME"];
-			$completeHtmlUrl .= dirname($_SERVER["SCRIPT_NAME"]);
+			$completeHtmlUrl  = 'http://';
+			$completeHtmlUrl .= $_SERVER['SERVER_NAME'];
+			$completeHtmlUrl .= dirname($_SERVER['SCRIPT_NAME']);
 			$completeHtmlUrl  = $settings['completeHtmlName'];
 
 			//redirect
-			header("Location: ".$completeHtmlUrl);
+			header('Location: '.$completeHtmlUrl);
 			exit;
 		} else {
-			$error[] = "The mail was not sent.";
+			$error[] = 'The mail was not sent.';
 		}
 	}
 }
