@@ -5,8 +5,12 @@
 /////////////////////
 
 
-// Configuration //
+// Comment out when you use UTF-8
+//
+// mb_internal_encoding('UTF-8');
 
+
+// Configuration //
 
 // email (REQUIRED)
 // The is the mail address that mail is sent to.
