@@ -91,13 +91,13 @@ if ($_POST){
 	}
 
 	// validate required parameters
-	foreach($_POST as $name => $param) {
-		if (isset($parameters[$name]['required']) && $parameters[$name]['required']) {
-			if ($param == '') {
+  foreach($parameters as $name => $parameter){
+    if (isset($parameter['required']) && $parameter['required']){
+      if (!isset($_POST[$name]) || $_POST[$name] === ''){
 				$errors[] = sprintf($settings['error_not_exist_required_parameter'], $parameters[$name]['formalName']);
-			}
-		}
-	}
+      }
+    }
+  }
 
 	// mail variables
 	$from = $settings['from'];
